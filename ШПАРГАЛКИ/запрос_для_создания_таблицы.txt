@@ -2,7 +2,7 @@ create table имя_таблицы (
 	имя_первичного_ключа serial primary key,
 	имя_столбца тип_данных [параметры],
 	имя_столбца тип_данных [параметры],
-	имя_внешнего_ключа тип_данных references другая_таблица(первичный_ключ) on delete cascade on update cascade
+	имя_внешнего_ключа int references другая_таблица(первичный_ключ) on delete cascade on update cascade
 );
 
 
