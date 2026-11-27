@@ -1,0 +1,44 @@
+create table types_TO(
+    code varchar(40) not null, --primary key!!!
+    name varchar(20) not null,
+    description varchar(100) not null,
+    periods integer,
+    time_of_work integer,
+    need_or_not bool not null
+ );
+
+create table request( 
+    id serial primary key,
+    types varchar(20) check (types in ('плановая', 'аварийная', 'текущая')),
+    prioritet varchar(20) check (prioritet in ('низкий', 'средний', 'высокий', 'критический')),
+    brigades_id integer not null references workshops(id) on delete restrict,
+    users_id integer not null references users(id) on delete restrict,
+    description varchar(50) not null,
+    reason varchar(30) not null, --может быть null!!!
+    date_of_start date,
+    date_of_end date,
+    real_date_of_start date,
+    real_date_of_end date,
+    report varchar(60) not null, --text
+    time_of_nichego date
+);
+
+create table materials(
+    id_materisals serial primary key,
+    name varchar(25) not null,
+    units varchar(20) not null,
+    balance_on_store int not null,
+    min_balance_on_store int not null,
+    point varchar(30) not null,
+    cost_per_one int not null, --money
+    postavshik varchar(50) not null
+);
+
+create table journal ( --нет id
+   id_users int not null references users(id) on delete restrict,
+   type_of_entity varchar(40) not null,
+   type_of_action varchar(30) check (type_of_action in('создание','обновление','удаление','изменение статуса')),
+   previous_znachenie varchar(30),
+   new_znachenie varchar(25),
+   date_and_time_operation timestamp not null default current_timestamp
+);

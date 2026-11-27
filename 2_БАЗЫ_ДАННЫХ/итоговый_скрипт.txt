@@ -1,0 +1,120 @@
+create table roles (
+    id_role  serial primary key,
+    name varchar(20) not null unique
+    );
+
+create table workshops(
+    id_workshop serial primary key,
+    name varchar(50) not null
+);
+
+create table brigades(
+    code_brigade serial primary key,
+    name varchar(40) not null,
+    specialization varchar(40) not null
+);
+
+create table brigades_x_workshop(
+    id_brigades_x_workshop serial primary key,
+    id_workshop int not null references workshops(id_workshop) on delete cascade,
+    id_brigades int not null references brigades(code_brigade) on delete cascade
+);
+
+create table users(
+    id_user serial primary key,
+    email varchar(100) not null,
+    phone varchar(20) not null,
+    surname varchar(20) not null,
+    name varchar(15) not null,
+    middle_name varchar(20) not null,
+    date_of_register date default current_date,
+    status bool not null default true,
+    id_workshop int references workshops(id_workshop) on delete set null,
+    id_brigades int references brigades(code_brigade) on delete set null,
+    hash_password varchar(255) not null,
+    id_role int references roles(id_role) on delete set null
+ );
+
+create table equipments(
+    equipment_number varchar(35) primary key,
+    name varchar(40) not null,
+    model varchar(20) not null,
+    zavod_number varchar(30) not null,
+    commission_date date,
+    work_date date,
+    workshop_id int references workshops(id_workshop) on delete restrict,
+    status varchar(20) check (status in('в работе','в ремонте','в простое','выведено из эксплуатации')),
+    passport_link varchar(200),
+    manufacturer varchar(100) not null,
+    garantia_date date,
+    created_at timestamp not null default current_timestamp
+);
+
+create table types_to(
+    code_types_to varchar(40) primary key,
+    name varchar(20) not null,
+    description varchar(100) not null,
+    periods integer,
+    time_of_work integer,
+    need_to_stop bool not null
+ );
+
+create table work_orders( 
+    id serial primary key,
+    number varchar(30) NOT NULL UNIQUE,
+    types varchar(20) not null check (types in ('плановая', 'аварийная', 'текущая')),
+    prioritet varchar(20) not null check (prioritet in ('низкий', 'средний', 'высокий', 'критический')),
+    brigades_id integer not null references brigades(code_brigade) on delete restrict,
+    users_id integer not null references users(id_user) on delete restrict,
+    description text not null,
+    reason varchar(30),
+    date_of_start date,
+    date_of_end date,
+    real_date_of_start date,
+    real_date_of_end date,
+    report text,
+    downtime_hours integer,
+    equipment_number varchar(35) not null references equipments(equipment_number) on delete restrict
+);
+
+create table materials(
+    id_materials serial primary key,
+    name varchar(25) not null,
+    units varchar(20) not null,
+    balance_on_store numeric(12,3) not null,
+    min_balance_on_store int not null,
+    point varchar(30) not null,
+    cost_per_one numeric(12,3) not null,
+    postavshik varchar(50) not null
+);
+
+create table journal (
+   id serial primary key,
+   id_users int references users(id_user) on delete set null,
+   entity_id varchar(50) NOT NULL,
+   type_of_entity varchar(40) not null,
+   type_of_action varchar(30) check (type_of_action in('создание','обновление','удаление','изменение статуса')),
+   previous_znachenie text,
+   new_znachenie text,
+   date_and_time_operation timestamp not null default current_timestamp
+);
+
+create table schedule(
+	id serial primary key,
+	equipment_number VARCHAR(35) NOT NULL REFERENCES equipments(equipment_number) ON DELETE RESTRICT,
+    code_types_to varchar(40) NOT NULL REFERENCES types_to(code_types_to)      ON DELETE RESTRICT,
+    planned_date DATE NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'запланировано'
+                         CHECK (status IN ('запланировано','назначено','выполняется','выполнено','отменено','просрочено')),
+    brigade_id INTEGER REFERENCES brigades(code_brigade) ON DELETE SET NULL
+);
+
+create table materials_x_request(
+	id                   SERIAL PRIMARY KEY,
+    id_request           INTEGER NOT NULL REFERENCES work_orders(id) ON DELETE CASCADE,
+    id_materisals        INTEGER NOT NULL REFERENCES materials(id_materials)   ON DELETE RESTRICT,
+    quantity             int not null
+);
+
+
+
